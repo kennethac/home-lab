@@ -16,7 +16,7 @@ machine:
 %{ endif }
 
 cluster:
-  allowSchedulingOnControlPlanes: true
+  allowSchedulingOnControlPlanes: false
   apiServer:
     ${indent(4, api_server)}
   controllerManager:
