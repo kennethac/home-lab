@@ -1,0 +1,22 @@
+---
+- name: Install and Configure Tailscale
+  hosts: my_nodes
+  become: true
+
+  # This will always prompt you in the terminal before running
+  vars_prompt:
+    - name: tailscale_authkey
+      prompt: "Please enter your Tailscale Auth Key"
+      private: true # Hides your typing in the terminal for security
+
+  vars:
+    tailscale_args: "--advertise-exit-node --advertise-routes=192.168.84.0/22 --hostname=flying-eagle"
+  # Safety check: Stop immediately if you hit enter without typing anything
+  pre_tasks:
+    - name: Ensure an Auth Key was provided
+      ansible.builtin.fail:
+        msg: "Deployment halted: Tailscale Auth Key cannot be empty."
+      when: tailscale_authkey | trim == ""
+
+  roles:
+    - artis3n.tailscale

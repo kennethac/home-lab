@@ -1,0 +1,5 @@
+all:
+  children:
+    tailscale_nodes:
+      hosts:
+        flying-eagle:

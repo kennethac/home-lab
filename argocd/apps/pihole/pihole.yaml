@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pihole-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: proxmox-data-ext4
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+  labels:
+    app: pihole-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole-app
+  template:
+    metadata:
+      labels:
+        app: pihole-app
+    spec:
+      containers:
+      - name: pihole-app
+        image: pihole/pihole:latest
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            memory: "1024Mi"
+        env:
+        - name: TZ
+          value: "America/Denver"
+        - name: FTLCONF_dns_listeningMode
+          value: "ALL"
+        - name: FTLCONF_webserver_api_password
+          value: "this is a bacon test"
+      volumes:
+      - name: pihole-data
+        persistentVolumeClaim:
+          claimName: pihole-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-service
+  labels:
+    app: pihole-app
+spec:
+  ports:
+  - port: 53
+    protocol: TCP
+    name: dns-tcp
+  - port: 53
+    protocol: UDP
+    name: dns-udp
+  - port: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: pihole-app

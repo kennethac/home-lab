@@ -1,0 +1,1 @@
+In order for this to work, you must create a secret in the tailscale namespace which this app creates called "oauth-secrets".

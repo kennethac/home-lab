@@ -1,0 +1,38 @@
+{{- range .Values.applications }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .name }}
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    {{- if .chart }}
+    # --- EXTERNAL HELM CHART LOGIC ---
+    repoURL: {{ .repoURL }}
+    chart: {{ .chart }}
+    targetRevision: {{ .targetRevision }}
+    {{- if .helm }}
+    helm:
+      values: |
+        {{- .helm.values | nindent 8 }}
+    {{- end }}
+    {{- else }}
+    # --- LOCAL GIT DIRECTORY LOGIC ---
+    repoURL: {{ $.Values.global.repoURL }}
+    path: {{ .path }}
+    targetRevision: {{ .targetRevision | default $.Values.global.targetRevision }}
+    {{- end }}
+  destination:
+    server: {{ $.Values.global.destinationServer }}
+    namespace: {{ .namespace }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+{{- end }}

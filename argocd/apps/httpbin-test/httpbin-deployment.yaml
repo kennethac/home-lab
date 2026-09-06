@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: playground
+  labels:
+    environment: dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-app
+  labels:
+    app: httpbin-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpbin-app
+  template:
+    metadata:
+      labels:
+        app: httpbin-app
+    spec:
+      containers:
+      - name: httpbin-app
+        image: kennethreitz/httpbin:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1024Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin-app-service
+  labels:
+    app: httpbin-app-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: httpbin-app

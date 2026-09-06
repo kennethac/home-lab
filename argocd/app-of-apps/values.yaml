@@ -1,0 +1,45 @@
+global:
+  repoURL: git@github.com:kennethac/home-lab.git
+  targetRevision: HEAD
+  destinationServer: https://kubernetes.default.svc
+
+# List every child application you want to generate
+applications:
+  - name: proxmox-csi
+    chart: proxmox-csi-plugin
+    repoURL: ghcr.io/sergelogvinov/charts
+    targetRevision: 0.5.10
+    namespace: csi-proxmox
+    syncWave: "0"
+    helm:
+      values: |
+        config:
+          existingConfigSecret: proxmox-csi-plugin
+        storageClass:
+          - name: proxmox-data-ext4
+            storage: local-lvm # Proxmox storage pool name
+            reclaimPolicy: Delete
+            fstype: ext4
+            default: true
+  - name: tailscale-operator
+    chart: tailscale-operator
+    repoURL: https://pkgs.tailscale.com/helmcharts
+    targetRevision: 1.102.3
+    namespace: tailscale
+    syncWave: "0"
+    helm:
+      values: |
+        operatorConfig:
+          hostname: chipndale-operator
+  - name: httpbin-test
+    path: argocd/apps/httpbin-test
+    namespace: playground
+    syncWave: "2"
+  - name: mealie-app
+    path: argocd/apps/mealie
+    namespace: playground
+    syncWave: "2"
+  - name: pihole
+    path: argocd/apps/pihole
+    namespace: pihole
+    syncWave: "1"

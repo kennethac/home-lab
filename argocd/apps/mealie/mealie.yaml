@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mealie-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: proxmox-data-ext4
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealie
+  labels:
+    app: mealie-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mealie-app
+  template:
+    metadata:
+      labels:
+        app: mealie-app
+    spec:
+      containers:
+      - name: mealie-app
+        image: ghcr.io/mealie-recipes/mealie:v3.14.0
+        ports:
+        - containerPort: 9000
+        resources:
+          limits:
+            memory: "1024Mi"
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/Denver"
+        - name: ALLOW_SIGNUP
+          value: "false"
+        - name: BASE_URL
+          value: "http://mealie.local"
+      volumes:
+      - name: mealie-data
+        persistentVolumeClaim:
+          claimName: mealie-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mealie-app-service
+  labels:
+    app: mealie-app-service
+spec:
+  ports:
+  - port: 9000
+    protocol: TCP
+  selector:
+    app: mealie-app
