@@ -1,5 +1,5 @@
 global:
-  repoURL: git@github.com:kennethac/home-lab.git
+  repoURL: https://github.com/kennethac/home-lab.git
   targetRevision: HEAD
   destinationServer: https://kubernetes.default.svc
 

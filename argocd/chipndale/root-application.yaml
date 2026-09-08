@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:kennethac/home-lab.git
+    repoURL: https://github.com/kennethac/home-lab.git
     targetRevision: HEAD
     path: argocd/chipndale/app-of-apps
   destination:
