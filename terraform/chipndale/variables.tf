@@ -6,13 +6,9 @@ variable "proxmox" {
     endpoint     = string
     insecure     = bool
     username     = string
+    password     = string
+    username_only = string
   })
-}
-
-variable "proxmox_api_token" {
-  description = "API token for Proxmox"
-  type        = string
-  sensitive   = true
 }
 
 variable "talos_image" {
@@ -35,7 +31,7 @@ variable "talos_cluster_config" {
     name                         = string
     vip                          = optional(string)
     gateway                      = string
-    subnet_mask                  = optional(string, "24")
+    subnet_mask                  = optional(string, "22")
     talos_machine_config_version = optional(string)
     proxmox_cluster              = string
     kubernetes_version           = string

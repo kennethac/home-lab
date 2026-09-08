@@ -9,6 +9,7 @@ resource "kubernetes_namespace" "argocd" {
 
 # 2. Deploy Argo CD using Helm
 resource "helm_release" "argocd" {
+  depends_on = [kubernetes_namespace.argocd]
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
