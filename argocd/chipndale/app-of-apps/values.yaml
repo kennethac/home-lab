@@ -32,14 +32,14 @@ applications:
         operatorConfig:
           hostname: chipndale-operator
   - name: httpbin-test
-    path: argocd/apps/httpbin-test
+    path: argocd/chipndale/apps/httpbin-test
     namespace: playground
     syncWave: "2"
   - name: mealie-app
-    path: argocd/apps/mealie
+    path: argocd/chipndale/apps/mealie
     namespace: playground
     syncWave: "2"
   - name: pihole
-    path: argocd/apps/pihole
+    path: argocd/chipndale/apps/pihole
     namespace: pihole
     syncWave: "1"
