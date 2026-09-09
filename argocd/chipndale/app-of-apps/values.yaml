@@ -5,6 +5,10 @@ global:
 
 # List every child application you want to generate
 applications:
+  - name: cilium-setup
+    path: argocd/chipndale/apps/cilium-setup
+    namespace: cilium
+    syncWave: "0"
   - name: proxmox-csi
     chart: proxmox-csi-plugin
     repoURL: ghcr.io/sergelogvinov/charts
