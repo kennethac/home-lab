@@ -62,7 +62,7 @@ externalIPs:
   enabled: true
 
 l2announcements:
-  enabled: false
+  enabled: true
 
 # https://docs.cilium.io/en/stable/operations/performance/tuning/#ebpf-host-routing
 bpf:
