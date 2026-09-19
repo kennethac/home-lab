@@ -3,3 +3,11 @@ all:
     tailscale_nodes:
       hosts:
         flying-eagle:
+    technitium:
+      hosts:
+        technitium-chip:
+        technitium-dale:
+      children:
+        technitium_primary:
+          hosts:
+            technitium-dale:

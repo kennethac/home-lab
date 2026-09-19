@@ -237,3 +237,12 @@ resource "cloudflare_dns_record" "vday2026_kennethchristensen_me_a" {
   ttl     = 60
   proxied = false
 }
+
+resource "cloudflare_dns_record" "lan_kennethchristensen_me_a" {
+  zone_id = var.kennethchristensen_me_zone_id
+  name    = "*.lan"
+  type    = "A"
+  content = ""
+  ttl     = 60
+  proxied = false
+}

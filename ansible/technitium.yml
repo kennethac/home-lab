@@ -1,0 +1,191 @@
+---
+- name: Install Technitium DNS Server inside LXC
+  hosts: technitium
+  become: true
+  vars:
+    # Set to true if systemd-resolved is running and blocking port 53
+    disable_systemd_resolved: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600  # Only updates if older than 1 hour
+  
+    - name: Ensure required dependencies are installed
+      ansible.builtin.package:
+        name:
+          - curl
+          - libicu-dev
+        state: present
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Disable systemd-resolved to free up port 53
+      when:
+          - disable_systemd_resolved | bool
+          - "'systemd-resolved.service' in ansible_facts.services"
+      block:
+        - name: Stop and disable systemd-resolved service
+          ansible.builtin.systemd:
+            name: systemd-resolved
+            state: stopped
+            enabled: false
+
+        - name: Remove symbolic link to resolv.conf if it exists
+          ansible.builtin.file:
+            path: /etc/resolv.conf
+            state: absent
+
+        - name: Recreate a static resolv.conf pointing to local fallback
+          ansible.builtin.copy:
+            dest: /etc/resolv.conf
+            content: |
+              nameserver 1.1.1.3
+              nameserver 1.0.0.3
+              nameserver 2606:4700:4700::1113
+              nameserver 2606:4700:4700::1003
+            mode: '0644'
+
+    - name: Execute official Technitium installation script
+      ansible.builtin.shell:
+        cmd: "curl -sSL https://download.technitium.com/dns/install.sh | bash"
+        creates: /opt/technitium/dns/systemd.service
+- name: Initialize Technitium Cluster Primary
+  hosts: technitium_primary
+  vars:
+    api_url: "http://{{ ansible_host }}"
+    username: "{{ lookup('env', 'TECHNITIUM_USER') }}"
+    password: "{{ lookup('env', 'TECHNITIUM_PASS') }}"
+    cluster_domain: "{{ lookup('env', 'TECHNITIUM_CLUSTER_DOMAIN') }}"
+
+  tasks:
+    - name: Ensure required environment variables are set for Primary
+      ansible.builtin.assert:
+        that:
+          - username | length > 0
+          - password | length > 0
+          - cluster_domain | length > 0
+        fail_msg: "Please set TECHNITIUM_USER, TECHNITIUM_PASS, and TECHNITIUM_CLUSTER_DOMAIN."
+
+    - name: Debug Target API URL
+      ansible.builtin.debug:
+        msg: "Targeting API at: {{ api_url }} (ansible_host: {{ ansible_host | default('NOT SET') }})"
+
+    - name: Login to Primary Technitium Server
+      effectivelywild.technitium_dns.technitium_dns_login:
+        api_url: "{{ api_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      register: primary_login
+      delegate_to: localhost
+      # no_log: true
+
+    - name: Initialize the Cluster on Primary Node
+      effectivelywild.technitium_dns.technitium_dns_init_cluster:
+        api_url: "{{ api_url }}"
+        api_token: "{{ primary_login.token }}"
+        cluster_domain: "{{ cluster_domain }}"
+        primary_node_ip_addresses:
+          - "{{ ipv4_address }}"
+          - "{{ ipv6_address }}"
+      register: primary_cluster_init_result
+      delegate_to: localhost
+
+    - name: Debug Primary Cluster Initialization Result
+      ansible.builtin.debug:
+        var: primary_cluster_init_result
+
+- name: Join Secondary Nodes to Technitium Cluster
+  hosts: technitium:!technitium_primary
+  serial: 1
+  vars:
+    api_url: "http://{{ ansible_host }}"
+    username: "{{ lookup('env', 'TECHNITIUM_USER') }}"
+    password: "{{ lookup('env', 'TECHNITIUM_PASS') }}"
+    cluster_domain: "{{ lookup('env', 'TECHNITIUM_CLUSTER_DOMAIN') }}"
+
+  tasks:
+    - name: Ensure required environment variables are set for Secondary
+      ansible.builtin.assert:
+        that:
+          - username | length > 0
+          - password | length > 0
+          - cluster_domain | length > 0
+        fail_msg: "Please set TECHNITIUM_USER, TECHNITIUM_PASS, and TECHNITIUM_CLUSTER_DOMAIN."
+
+    - name: Login to Secondary Technitium Server
+      effectivelywild.technitium_dns.technitium_dns_login:
+        api_url: "{{ api_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      register: secondary_login
+      delegate_to: localhost
+      # no_log: true
+
+    - name: Join Secondary Node to Primary
+      effectivelywild.technitium_dns.technitium_dns_init_join_cluster:
+        api_url: "{{ api_url }}"
+        api_token: "{{ secondary_login.token }}"
+        primary_node_password: "{{ password }}"
+        primary_node_username: "{{ username }}"
+        primary_node_url: "http://{{ cluster_domain }}:5380"
+        primary_node_ip_address: "{{ hostvars[groups['technitium_primary'][0]]['ipv4_address'] }}"
+        secondary_node_ip_addresses:
+          - "{{ ipv4_address }}"
+          - "{{ ipv6_address }}"
+      register: secondary_cluster_join_result
+      delegate_to: localhost
+
+    - name: Debug Secondary Cluster Join Result
+      ansible.builtin.debug:
+        msg: "Successfully joined {{ inventory_hostname }} ({{ api_url }}) to cluster."
+- name: Set up zones
+  hosts: technitium_primary
+  serial: 1
+  vars:
+    api_url: "http://{{ ansible_host }}"
+    username: "{{ lookup('env', 'TECHNITIUM_USER') }}"
+    password: "{{ lookup('env', 'TECHNITIUM_PASS') }}"
+    cluster_domain: "{{ lookup('env', 'TECHNITIUM_CLUSTER_DOMAIN') }}"
+    catalog_zone_name: "cluster-catalog.{{ cluster_domain }}"
+
+  tasks:
+    - name: Ensure required environment variables are set for Primary
+      ansible.builtin.assert:
+        that:
+          - username | length > 0
+          - password | length > 0
+          - cluster_domain | length > 0
+        fail_msg: "Please set TECHNITIUM_USER, TECHNITIUM_PASS, and TECHNITIUM_CLUSTER_DOMAIN."
+
+    - name: Login to Primary Technitium Server
+      effectivelywild.technitium_dns.technitium_dns_login:
+        api_url: "{{ api_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      register: primary_login
+      delegate_to: localhost
+
+    - name: Create DNS zone for kenneth.ac
+      effectivelywild.technitium_dns.technitium_dns_zone:
+        api_url: "{{ api_url }}"
+        api_token: "{{ primary_login.token }}"
+        catalog: "{{ catalog_zone_name }}"
+        type: "Forwarder"
+        protocol: "Udp"
+        tsigKeyName: "I think I need this..."
+        zone: "kenneth.ac"
+        forwarder: "this-server"
+        initializeForwarder: true
+
+    - name: Create test DNS record
+      effectivelywild.technitium_dns.technitium_dns_record:
+        api_url: "{{ api_url }}"
+        api_token: "{{ primary_login.token }}"
+        ipAddress: "192.168.84.16"
+        ttl: 10
+        type: "A"
+        name: "laptop.kenneth.ac"
+        zone: "kenneth.ac"
