@@ -24,8 +24,8 @@
 
     - name: Disable systemd-resolved to free up port 53
       when:
-          - disable_systemd_resolved | bool
-          - "'systemd-resolved.service' in ansible_facts.services"
+        - disable_systemd_resolved | bool
+        - "'systemd-resolved.service' in ansible_facts.services"
       block:
         - name: Stop and disable systemd-resolved service
           ansible.builtin.systemd:
@@ -52,6 +52,7 @@
       ansible.builtin.shell:
         cmd: "curl -sSL https://download.technitium.com/dns/install.sh | bash"
         creates: /opt/technitium/dns/systemd.service
+
 - name: Initialize Technitium Cluster Primary
   hosts: technitium_primary
   vars:
@@ -141,51 +142,3 @@
     - name: Debug Secondary Cluster Join Result
       ansible.builtin.debug:
         msg: "Successfully joined {{ inventory_hostname }} ({{ api_url }}) to cluster."
-- name: Set up zones
-  hosts: technitium_primary
-  serial: 1
-  vars:
-    api_url: "http://{{ ansible_host }}"
-    username: "{{ lookup('env', 'TECHNITIUM_USER') }}"
-    password: "{{ lookup('env', 'TECHNITIUM_PASS') }}"
-    cluster_domain: "{{ lookup('env', 'TECHNITIUM_CLUSTER_DOMAIN') }}"
-    catalog_zone_name: "cluster-catalog.{{ cluster_domain }}"
-
-  tasks:
-    - name: Ensure required environment variables are set for Primary
-      ansible.builtin.assert:
-        that:
-          - username | length > 0
-          - password | length > 0
-          - cluster_domain | length > 0
-        fail_msg: "Please set TECHNITIUM_USER, TECHNITIUM_PASS, and TECHNITIUM_CLUSTER_DOMAIN."
-
-    - name: Login to Primary Technitium Server
-      effectivelywild.technitium_dns.technitium_dns_login:
-        api_url: "{{ api_url }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
-      register: primary_login
-      delegate_to: localhost
-
-    - name: Create DNS zone for kenneth.ac
-      effectivelywild.technitium_dns.technitium_dns_zone:
-        api_url: "{{ api_url }}"
-        api_token: "{{ primary_login.token }}"
-        catalog: "{{ catalog_zone_name }}"
-        type: "Forwarder"
-        protocol: "Udp"
-        tsigKeyName: "I think I need this..."
-        zone: "kenneth.ac"
-        forwarder: "this-server"
-        initializeForwarder: true
-
-    - name: Create test DNS record
-      effectivelywild.technitium_dns.technitium_dns_record:
-        api_url: "{{ api_url }}"
-        api_token: "{{ primary_login.token }}"
-        ipAddress: "192.168.84.16"
-        ttl: 10
-        type: "A"
-        name: "laptop.kenneth.ac"
-        zone: "kenneth.ac"

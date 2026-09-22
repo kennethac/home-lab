@@ -50,6 +50,12 @@ variable "technitium_dale" {
   })
 }
 
+variable "technitium_api_token" {
+  description = "Technitium API token"
+  type        = string
+  sensitive   = true
+}
+
 variable "ssh_public_key" {
   description = "SSH public key for the LXC containers"
   type        = string

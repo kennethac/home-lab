@@ -25,6 +25,43 @@ applications:
             reclaimPolicy: Delete
             fstype: ext4
             default: true
+  - name: external-dns
+    chart: external-dns
+    repoURL: https://kubernetes-sigs.github.io/external-dns/
+    targetRevision: 1.22.0
+    namespace: kube-system
+    syncWave: "1"
+    helm:
+      values: |
+        provider:
+          name: rfc2136
+        domainFilters:
+          - "kenneth.ac"
+          - "kennethchristensen.me"
+          - "exultantsoftware.com"
+        # Pass multiple zone flags via extraArgs
+        extraArgs:
+          - --rfc2136-zone=kenneth.ac
+          - --rfc2136-zone=kennethchristensen.me
+          - --rfc2136-zone=exultantsoftware.com
+        env:
+          - name: EXTERNAL_DNS_RFC2136_HOST
+            value: "192.168.85.18"
+          - name: EXTERNAL_DNS_RFC2136_PORT
+            value: "53"
+          - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET
+            value: "YOUR_SHARED_TSIG_SECRET"
+          - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET_ALG
+            value: "hmac-sha256"
+          - name: EXTERNAL_DNS_RFC2136_TSIG_KEYNAME
+            value: "external-dns-key"
+          - name: EXTERNAL_DNS_RFC2136_TSIG_AXFR
+            value: "true"
+        sources:
+          - service
+          - ingress
+        policy: sync
+        txtOwnerId: "chipndale-cluster"
   - name: tailscale-operator
     chart: tailscale-operator
     repoURL: https://pkgs.tailscale.com/helmcharts
