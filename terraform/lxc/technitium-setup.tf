@@ -9,6 +9,16 @@ resource "technitium_zone" "kenneth_ac" {
   type    = "Forwarder"
 }
 
+resource "technitium_zone" "kennethchristensen_me" {
+  name = "kennethchristensen.me"
+  type    = "Forwarder"
+}
+
+resource "technitium_zone" "exultantsoftware_com" {
+  name = "exultantsoftware.com"
+  type    = "Forwarder"
+}
+
 resource "technitium_record" "laptop_kenneth_ac" {
   zone    = "kenneth.ac"
   name    = "laptop.kenneth.ac"
