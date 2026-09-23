@@ -7,16 +7,22 @@ resource "technitium_server_settings" "technitium_settings" {
 resource "technitium_zone" "kenneth_ac" {
   name = "kenneth.ac"
   type    = "Forwarder"
+  zone_transfer_tsig_key_names = ["default-tsig-key"]
+  allow_transfer = ["192.168.85.0/24"]
 }
 
 resource "technitium_zone" "kennethchristensen_me" {
   name = "kennethchristensen.me"
   type    = "Forwarder"
+  zone_transfer_tsig_key_names = ["default-tsig-key"]
+  allow_transfer = ["192.168.85.0/24"]
 }
 
 resource "technitium_zone" "exultantsoftware_com" {
   name = "exultantsoftware.com"
   type    = "Forwarder"
+  zone_transfer_tsig_key_names = ["default-tsig-key"]
+  allow_transfer = ["192.168.85.0/24"]
 }
 
 resource "technitium_record" "laptop_kenneth_ac" {
