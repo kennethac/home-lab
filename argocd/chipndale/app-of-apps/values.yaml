@@ -50,11 +50,14 @@ applications:
           - name: EXTERNAL_DNS_RFC2136_PORT
             value: "53"
           - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET
-            value: "YOUR_SHARED_TSIG_SECRET"
+            valueFrom:
+              secretKeyRef:
+                name: technitium-tsig-secret
+                key: tsig-secret
           - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET_ALG
             value: "hmac-sha256"
           - name: EXTERNAL_DNS_RFC2136_TSIG_KEYNAME
-            value: "external-dns-key"
+            value: "default-tsig-key"
           - name: EXTERNAL_DNS_RFC2136_TSIG_AXFR
             value: "true"
         sources:

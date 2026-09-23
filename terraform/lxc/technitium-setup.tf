@@ -1,6 +1,6 @@
-resource "technitium_settings" "technitium_settings" {
-  forwarders         = ["1.1.1.3", "1.0.0.3"]
-  forwarder_protocol = "Tls"
+resource "technitium_server_settings" "technitium_settings" {
+  forwarders         = ["1.1.1.3:53", "1.0.0.3:53"]
+  forwarder_protocol = "Udp"
   recursion          = "AllowOnlyForPrivateNetworks"
 }
 
