@@ -33,7 +33,7 @@ metadata:
   namespace: statics
 data:
   Caddyfile: |
-    *.kenneth.ac, kenneth.ac {
+    *.kenneth.ac {
         # Explicitly load the cert-manager issued wildcard certificate
         tls /etc/caddy/certs/tls.crt /etc/caddy/certs/tls.key
 
