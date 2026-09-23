@@ -33,20 +33,13 @@ metadata:
   namespace: statics
 data:
   Caddyfile: |
-    {
-        # Optional: Set global email for Automatic HTTPS
-        # email admin@kenneth.ac
-    }
+    *.kenneth.ac, kenneth.ac {
+        # Explicitly load the cert-manager issued wildcard certificate
+        tls /etc/caddy/certs/tls.crt /etc/caddy/certs/tls.key
 
-    # Match any subdomain under kenneth.ac
-    *.kenneth.ac {
-        # Extract subdomain prefix using regex
+        # Subdomain routing logic
         @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.kenneth\.ac$
-        
-        # Route request to /wwwroot/{site} directory
         root * /wwwroot/{re.sub.site}
-        
-        # Enable static file server with directory browsing disabled
         file_server
     }
 ---
@@ -68,7 +61,7 @@ spec:
         app: statics-stack
     spec:
       containers:
-        # 1. Caddy Web Server
+        # Caddy Container
         - name: caddy
           image: caddy:2-alpine
           ports:
@@ -82,10 +75,11 @@ spec:
             - name: caddy-config
               mountPath: /etc/caddy/Caddyfile
               subPath: Caddyfile
-            - name: caddy-data
-              mountPath: /data
+            - name: caddy-certs
+              mountPath: /etc/caddy/certs
+              readOnly: true
 
-        # 2. OpenSSH Server (rsync/scp access)
+        # OpenSSH Server
         - name: ssh-server
           image: lscr.io/linuxserver/openssh-server:latest
           env:
@@ -96,8 +90,6 @@ spec:
             - name: USER_NAME
               value: "kenneth"
             - name: PASSWORD_ACCESS
-              value: "false"
-            - name: SUDO_ACCESS
               value: "false"
             - name: PUBLIC_KEY
               valueFrom:
@@ -118,10 +110,10 @@ spec:
         - name: caddy-config
           configMap:
             name: caddy-config
-        - name: caddy-data
-          emptyDir: {}
+        - name: caddy-certs
+          secret:
+            secretName: kenneth-ac-wildcard-tls
 ---
-# LoadBalancer for SSH endpoint + ExternalDNS record
 apiVersion: v1
 kind: Service
 metadata:
@@ -138,7 +130,6 @@ spec:
       port: 22
       targetPort: 2222
 ---
-# LoadBalancer for Web traffic + ExternalDNS Wildcard record
 apiVersion: v1
 kind: Service
 metadata:
