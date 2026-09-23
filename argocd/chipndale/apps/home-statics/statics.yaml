@@ -120,7 +120,7 @@ metadata:
   name: statics-ssh-lb
   namespace: statics
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "statics.kenneth.ac"
+    external-dns.kubernetes.io/hostname: "statics.kenneth.ac"
 spec:
   type: LoadBalancer
   selector:
@@ -136,7 +136,7 @@ metadata:
   name: statics-web-lb
   namespace: statics
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "*.kenneth.ac"
+    external-dns.kubernetes.io/hostname: "*.kenneth.ac"
 spec:
   type: LoadBalancer
   selector:
