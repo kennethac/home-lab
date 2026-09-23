@@ -79,6 +79,10 @@ applications:
     path: argocd/chipndale/apps/httpbin-test
     namespace: playground
     syncWave: "2"
+  - name: home-statics
+    path: argocd/chipndale/apps/home-statics
+    namespace: statics
+    syncWave: "2"
   - name: mealie-app
     path: argocd/chipndale/apps/mealie
     namespace: playground

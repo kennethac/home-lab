@@ -1,0 +1,159 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: statics
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: statics-pvc
+  namespace: statics
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: proxmox-data-ext4
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ssh-auth-keys
+  namespace: statics
+type: Opaque
+stringData:
+  authorized_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDlbKnQcPD9Nh/DRz9J1TQtPf39xgfPeUeejer3lssHolOIXTQSt/E3awYU6nb+Yl3nEH3DuThHsi9MVvSHhnEbcs6mmY4+/Jq513q3kHg9ASummgOOKdA1jSmUH4Fczi387RI/o58eCHv0JpUXTxxbEcdsqThuuDhZhESTq4x4ZNXbV8TeR0IcslbVUIfVmpx0rx4coP9HSxTP1oiZmmEPd/HAOBVqWRFpdtggWT+3z1r83405yxP2j+n/NzsLlsRHrg0YVRHL9MQ+N4BPVwB22An66miu+/fDGfsThWHhiIcStOAD8haVwRcNktQvT7Zak3xuWkrbKtoQ82aE6KTlGxUa9TuiQYasWFKV6HoDmcdbYEkVXkoaI9BE/Qvs2c8Scx2Mhx0FXEbdCkmMU+ZCj7J7d62tjqn10n+feBE3Ef4KkDEZNwBCT44oy7dD7nzbtvsuOrLRVQ2sMsoVyB971Prx1hpq4kNCU4YEXqQkpxXOZOgGn4rkoVjDn/dlI0Zgon53pvrmvKLBDVp8hycs6meT/T65B6il+AsUqgAzVbvdXKVoma/10EOhzy0XwprBGOvLWrikLufbcuX2+d7oWd53y4r9IihL6R0Yijtd38FQWUBSU3cMSjGbIKiATv6Q5lY4TK2wS4c4ykbreblPfgczKWsiz2h8mu4N8r7QeQ== 1kennethac@gmail.com"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: caddy-config
+  namespace: statics
+data:
+  Caddyfile: |
+    {
+        # Optional: Set global email for Automatic HTTPS
+        # email admin@kenneth.ac
+    }
+
+    # Match any subdomain under kenneth.ac
+    *.kenneth.ac {
+        # Extract subdomain prefix using regex
+        @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.kenneth\.ac$
+        
+        # Route request to /wwwroot/{site} directory
+        root * /wwwroot/{re.sub.site}
+        
+        # Enable static file server with directory browsing disabled
+        file_server
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statics-stack
+  namespace: statics
+  labels:
+    app: statics-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statics-stack
+  template:
+    metadata:
+      labels:
+        app: statics-stack
+    spec:
+      containers:
+        # 1. Caddy Web Server
+        - name: caddy
+          image: caddy:2-alpine
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 443
+              name: https
+          volumeMounts:
+            - name: wwwroot
+              mountPath: /wwwroot
+            - name: caddy-config
+              mountPath: /etc/caddy/Caddyfile
+              subPath: Caddyfile
+            - name: caddy-data
+              mountPath: /data
+
+        # 2. OpenSSH Server (rsync/scp access)
+        - name: ssh-server
+          image: lscr.io/linuxserver/openssh-server:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: USER_NAME
+              value: "kenneth"
+            - name: PASSWORD_ACCESS
+              value: "false"
+            - name: SUDO_ACCESS
+              value: "false"
+            - name: PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ssh-auth-keys
+                  key: authorized_key
+          ports:
+            - containerPort: 2222
+              name: ssh
+          volumeMounts:
+            - name: wwwroot
+              mountPath: /wwwroot
+
+      volumes:
+        - name: wwwroot
+          persistentVolumeClaim:
+            claimName: statics-pvc
+        - name: caddy-config
+          configMap:
+            name: caddy-config
+        - name: caddy-data
+          emptyDir: {}
+---
+# LoadBalancer for SSH endpoint + ExternalDNS record
+apiVersion: v1
+kind: Service
+metadata:
+  name: statics-ssh-lb
+  namespace: statics
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "statics.kenneth.ac"
+spec:
+  type: LoadBalancer
+  selector:
+    app: statics-stack
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: 2222
+---
+# LoadBalancer for Web traffic + ExternalDNS Wildcard record
+apiVersion: v1
+kind: Service
+metadata:
+  name: statics-web-lb
+  namespace: statics
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "*.kenneth.ac"
+spec:
+  type: LoadBalancer
+  selector:
+    app: statics-stack
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
