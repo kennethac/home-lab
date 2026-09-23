@@ -83,6 +83,10 @@ applications:
     path: argocd/chipndale/apps/home-statics
     namespace: statics
     syncWave: "2"
+  - name: cert-manager
+    path: argocd/chipndale/apps/cert-manager
+    namespace: cert-manager
+    syncWave: "1"
   - name: mealie-app
     path: argocd/chipndale/apps/mealie
     namespace: playground
