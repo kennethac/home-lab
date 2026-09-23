@@ -84,6 +84,16 @@ applications:
     namespace: statics
     syncWave: "2"
   - name: cert-manager
+    chart: cert-manager
+    repoURL: https://charts.jetstack.io
+    targetRevision: v1.16.1
+    namespace: cert-manager
+    syncWave: "-1"
+    helm:
+      values: |
+        crds:
+          enabled: true
+  - name: cert-manager-certs
     path: argocd/chipndale/apps/cert-manager
     namespace: cert-manager
     syncWave: "1"
