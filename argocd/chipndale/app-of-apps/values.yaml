@@ -40,6 +40,7 @@ applications:
         # Pass multiple zone flags via extraArgs
         extraArgs:
           - --rfc2136-zone=home.kenneth.ac
+          - --txt-wildcard-replacement=wldcrd
         env:
           - name: EXTERNAL_DNS_RFC2136_HOST
             value: "192.168.85.18"

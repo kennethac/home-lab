@@ -151,7 +151,6 @@ metadata:
   namespace: statics
   annotations:
     external-dns.kubernetes.io/hostname: "*.home.kenneth.ac"
-    external-dns.kubernetes.io/registry: "noop"
 spec:
   type: LoadBalancer
   selector:
