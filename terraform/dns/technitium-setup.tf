@@ -6,7 +6,7 @@ resource "technitium_server_settings" "technitium_settings" {
 
 resource "technitium_zone" "home_kenneth_ac" {
   name = "home.kenneth.ac"
-  type    = "Forwarder"
+  type    = "Primary"
   zone_transfer_tsig_key_names = ["default-tsig-key"]
   allow_transfer = ["192.168.85.0/24"]
 }

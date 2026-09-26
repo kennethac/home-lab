@@ -8,7 +8,7 @@ metadata:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: kenneth-ac-wildcard
+  name: home-kenneth-ac-wildcard
   namespace: statics
 spec:
   secretName: kenneth-ac-wildcard-tls
