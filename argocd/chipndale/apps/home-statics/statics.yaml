@@ -74,6 +74,13 @@ spec:
       labels:
         app: statics-stack
     spec:
+      initContainers:
+        - name: fix-pvc-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 1000:1000 /wwwroot"]
+          volumeMounts:
+            - name: wwwroot
+              mountPath: /wwwroot
       containers:
         # Caddy Container
         - name: caddy
