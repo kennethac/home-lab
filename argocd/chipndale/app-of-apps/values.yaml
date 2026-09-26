@@ -36,14 +36,10 @@ applications:
         provider:
           name: rfc2136
         domainFilters:
-          - "kenneth.ac"
-          - "kennethchristensen.me"
-          - "exultantsoftware.com"
+          - "home.kenneth.ac"
         # Pass multiple zone flags via extraArgs
         extraArgs:
-          - --rfc2136-zone=kenneth.ac
-          - --rfc2136-zone=kennethchristensen.me
-          - --rfc2136-zone=exultantsoftware.com
+          - --rfc2136-zone=home.kenneth.ac
         env:
           - name: EXTERNAL_DNS_RFC2136_HOST
             value: "192.168.85.18"

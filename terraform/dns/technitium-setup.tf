@@ -13,7 +13,7 @@ resource "technitium_zone" "home_kenneth_ac" {
 
 resource "technitium_record" "laptop_home_kenneth_ac" {
   zone    = technitium_zone.home_kenneth_ac.name
-  name    = "laptop.kenneth.ac"
+  name    = "laptop.home.kenneth.ac"
   type    = "A"
   ttl     = 10
   value = "192.168.68.122"
@@ -21,7 +21,7 @@ resource "technitium_record" "laptop_home_kenneth_ac" {
 
 resource "technitium_record" "desktop_home_kenneth_ac" {
   zone    = technitium_zone.home_kenneth_ac.name
-  name    = "desktop.kenneth.ac"
+  name    = "desktop.home.kenneth.ac"
   type    = "A"
   ttl     = 10
   value = "192.168.68.122"

@@ -4,6 +4,20 @@ kind: Namespace
 metadata:
   name: statics
 ---
+# Wildcard Certificate for *.kenneth.ac
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kenneth-ac-wildcard
+  namespace: statics
+spec:
+  secretName: kenneth-ac-wildcard-tls
+  issuerRef:
+    name: letsencrypt-cloudflare
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.home.kenneth.ac"
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -33,12 +47,12 @@ metadata:
   namespace: statics
 data:
   Caddyfile: |
-    *.kenneth.ac {
+    *.home.kenneth.ac {
         # Explicitly load the cert-manager issued wildcard certificate
         tls /etc/caddy/certs/tls.crt /etc/caddy/certs/tls.key
 
         # Subdomain routing logic
-        @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.kenneth\.ac$
+        @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.home\.kenneth\.ac$
         root * /wwwroot/{re.sub.site}
         file_server
     }
@@ -120,7 +134,7 @@ metadata:
   name: statics-ssh-lb
   namespace: statics
   annotations:
-    external-dns.kubernetes.io/hostname: "statics.kenneth.ac"
+    external-dns.kubernetes.io/hostname: "statics.home.kenneth.ac"
 spec:
   type: LoadBalancer
   selector:
@@ -136,7 +150,7 @@ metadata:
   name: statics-web-lb
   namespace: statics
   annotations:
-    external-dns.kubernetes.io/hostname: "*.kenneth.ac"
+    external-dns.kubernetes.io/hostname: "*.home.kenneth.ac"
 spec:
   type: LoadBalancer
   selector:
