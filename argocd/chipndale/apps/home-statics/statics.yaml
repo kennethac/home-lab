@@ -53,7 +53,7 @@ data:
 
         # Subdomain routing logic
         @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.home\.kenneth\.ac$
-        root * /wwwroot/{re.sub.site}
+        root @subdomain /wwwroot/{re.sub.site}
         file_server
     }
 ---
