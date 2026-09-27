@@ -55,6 +55,9 @@ data:
         @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.home\.kenneth\.ac$
         root @subdomain /wwwroot/{re.sub.site}
         file_server
+        # Add these temporarily to see exactly what Caddy sees
+        header X-Debug-Raw-Host "{http.request.host}"
+        header X-Debug-Regex-Match "{re.sub.site}"
     }
 ---
 apiVersion: apps/v1
