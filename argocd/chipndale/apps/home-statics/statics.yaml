@@ -40,26 +40,6 @@ type: Opaque
 stringData:
   authorized_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDlbKnQcPD9Nh/DRz9J1TQtPf39xgfPeUeejer3lssHolOIXTQSt/E3awYU6nb+Yl3nEH3DuThHsi9MVvSHhnEbcs6mmY4+/Jq513q3kHg9ASummgOOKdA1jSmUH4Fczi387RI/o58eCHv0JpUXTxxbEcdsqThuuDhZhESTq4x4ZNXbV8TeR0IcslbVUIfVmpx0rx4coP9HSxTP1oiZmmEPd/HAOBVqWRFpdtggWT+3z1r83405yxP2j+n/NzsLlsRHrg0YVRHL9MQ+N4BPVwB22An66miu+/fDGfsThWHhiIcStOAD8haVwRcNktQvT7Zak3xuWkrbKtoQ82aE6KTlGxUa9TuiQYasWFKV6HoDmcdbYEkVXkoaI9BE/Qvs2c8Scx2Mhx0FXEbdCkmMU+ZCj7J7d62tjqn10n+feBE3Ef4KkDEZNwBCT44oy7dD7nzbtvsuOrLRVQ2sMsoVyB971Prx1hpq4kNCU4YEXqQkpxXOZOgGn4rkoVjDn/dlI0Zgon53pvrmvKLBDVp8hycs6meT/T65B6il+AsUqgAzVbvdXKVoma/10EOhzy0XwprBGOvLWrikLufbcuX2+d7oWd53y4r9IihL6R0Yijtd38FQWUBSU3cMSjGbIKiATv6Q5lY4TK2wS4c4ykbreblPfgczKWsiz2h8mu4N8r7QeQ== 1kennethac@gmail.com"
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: caddy-config
-  namespace: statics
-data:
-  Caddyfile: |
-    *.home.kenneth.ac {
-        # Explicitly load the cert-manager issued wildcard certificate
-        tls /etc/caddy/certs/tls.crt /etc/caddy/certs/tls.key
-
-        # Subdomain routing logic
-        @subdomain header_regexp sub Host ^(?P<site>[^.]+)\.home\.kenneth\.ac$
-        root @subdomain /wwwroot/{re.sub.site}
-        file_server
-        # Add these temporarily to see exactly what Caddy sees
-        header X-Debug-Raw-Host "{http.request.host}"
-        header X-Debug-Regex-Match "{re.sub.site}"
-    }
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -108,7 +88,7 @@ spec:
           image: lscr.io/linuxserver/openssh-server:latest
           env:
             - name: PUID
-              value: "1000"
+              value: "0"
             - name: PGID
               value: "1000"
             - name: USER_NAME
