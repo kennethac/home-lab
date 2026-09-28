@@ -72,6 +72,28 @@ applications:
       values: |
         operatorConfig:
           hostname: chipndale-operator
+  - name: traefik-ingress
+    chart: traefik
+    repoURL: https://traefik.github.io/charts
+    targetRevision: 41.6.0
+    namespace: traefik
+    syncWave: "1"
+    helm:
+      values: |
+        ingressRoute:
+          dashboard:
+            enabled: true
+            matchRule: Host(`traefik.home.kenneth.ac`)
+            entryPoints:
+              - web
+          providers:
+            kubernetesGateway:
+              enabled: true
+          gateway:
+            listeners:
+              web:
+                namespacePolicy:
+                  from: All
   - name: httpbin-test
     path: argocd/chipndale/apps/httpbin-test
     namespace: playground
