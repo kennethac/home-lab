@@ -3,6 +3,11 @@ kind: CiliumL2AnnouncementPolicy
 metadata:
   name: l2-policy
 spec:
-  # Omit 'interfaces' to announce on all interfaces, or specify (e.g., [ "eth0" ])
   externalIPs: true
   loadBalancerIPs: true
+  nodeSelector:
+    matchExpressions:
+      - key: kubernetes.io/os
+        operator: In
+        values:
+          - linux
