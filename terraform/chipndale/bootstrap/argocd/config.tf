@@ -27,9 +27,7 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       global = {
-        # FIX 1: Provide your fully qualified Tailscale MagicDNS name
-        # Replace <your-tailnet> with your actual Tailnet alias
-        domain = "chipndale-argocd.unicorn-court.ts.net" 
+        domain = "chipndale-argocd.home.kenneth.ac" 
       }
       configs = {
         params = {
@@ -37,18 +35,12 @@ resource "helm_release" "argocd" {
         }
       }
       server = {
-        service = {
-          type = "ClusterIP"
-          # FIX 2: Move the Tailscale HTTP annotation to the Service
-          annotations = {
-            "tailscale.com/backend-protocol" = "HTTP"
-          }
-        }
         ingress = {
           enabled          = true
-          ingressClassName = "tailscale"
-          pathType         = "Prefix"
-          # (Annotation removed from here)
+          annotations = {
+              "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
+              "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
+          }
         }
       }
       controller = {
