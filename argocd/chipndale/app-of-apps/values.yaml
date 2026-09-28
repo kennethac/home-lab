@@ -80,6 +80,10 @@ applications:
     syncWave: "1"
     helm:
       values: |
+        ingressClass:
+          enabled: true
+          name: traefik
+          isDefaultClass: true
         ingressRoute:
           dashboard:
             enabled: true
