@@ -38,7 +38,7 @@ resource "helm_release" "argocd" {
         ingress = {
           enabled          = true
           annotations = {
-              "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
+              "cert-manager.io/cluster-issuer" = "letsencrypt-cloudflare"
               "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
           }
         }
