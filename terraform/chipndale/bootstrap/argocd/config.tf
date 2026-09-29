@@ -41,6 +41,13 @@ resource "helm_release" "argocd" {
               "cert-manager.io/cluster-issuer" = "letsencrypt-cloudflare"
               "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
           }
+          hosts = ["chipndale-argocd.home.kenneth.ac"]
+          tls = [
+            {
+              hosts      = ["chipndale-argocd.home.kenneth.ac"]
+              secretName = "chipndale-argocd-tls"
+            }
+          ]
         }
       }
       controller = {
