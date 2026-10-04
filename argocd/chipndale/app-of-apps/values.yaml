@@ -22,7 +22,7 @@ applications:
         storageClass:
           - name: proxmox-data-ext4
             annotations:
-              storageclass.kubernetes.io/is-default-class: false
+              storageclass.kubernetes.io/is-default-class: "true"
             storage: local-lvm # Proxmox storage pool name
             reclaimPolicy: Delete
             fstype: ext4
