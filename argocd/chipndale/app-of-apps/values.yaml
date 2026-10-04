@@ -21,6 +21,8 @@ applications:
           existingConfigSecret: proxmox-csi-plugin
         storageClass:
           - name: proxmox-data-ext4
+            annotations:
+              storageclass.kubernetes.io/is-default-class: false
             storage: local-lvm # Proxmox storage pool name
             reclaimPolicy: Delete
             fstype: ext4
