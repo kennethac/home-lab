@@ -29,7 +29,7 @@ applications:
             default: true
   - name: nfs-csi
     chart: csi-driver-nfs
-    repoURL: kubernetes-csi.github.io/csi-driver-nfs
+    repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     targetRevision: 4.13.4
     namespace: csi-nfs
     syncWave: "0"
