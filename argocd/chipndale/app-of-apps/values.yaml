@@ -27,6 +27,10 @@ applications:
             reclaimPolicy: Delete
             fstype: ext4
             default: true
+  - name: nfs-csi-ns
+    path: argocd/chipndale/apps/csi-nfs
+    namespace: csi-nfs
+    syncWave: "0"
   - name: nfs-csi
     chart: csi-driver-nfs
     repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
