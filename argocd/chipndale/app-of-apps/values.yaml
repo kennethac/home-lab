@@ -25,6 +25,25 @@ applications:
             reclaimPolicy: Delete
             fstype: ext4
             default: true
+  - name: nfs-csi
+    chart: csi-driver-nfs
+    repoURL: kubernetes-csi.github.io/csi-driver-nfs
+    targetRevision: 4.13.4
+    namespace: csi-nfs
+    syncWave: "0"
+    helm:
+      values: |
+        storageClasses:
+          - name: immich-media
+            annotations:
+              storageclass.kubernetes.io/is-default-class: false
+            parameters:
+              server: 192.168.85.19 # chip-nas
+              share: /immich-media
+            reclaimPolicy: Retain
+            volumeBindingMode: Immediate
+            mountOptions:
+              - nfsvers=4.1
   - name: external-dns
     chart: external-dns
     repoURL: https://kubernetes-sigs.github.io/external-dns/
